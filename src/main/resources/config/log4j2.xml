@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration status="INFO">
+    <!--全局参数-->
+    <Properties>
+        <Property name="pattern">%d{yyyy-MM-dd HH:mm:ss,SSS} %5p %c{1}:%L - %m%n</Property>
+    </Properties>
+    <Loggers>
+        <Root level="INFO">
+            <AppenderRef ref="console"></AppenderRef>
+            <AppenderRef ref="rolling_file"></AppenderRef>
+        </Root>
+    </Loggers>
+    <Appenders>
+        <Console name="console" target="SYSTEM_OUT" follow="true">
+            <!--控制台只输出level及以上级别的信息-->
+            <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout>
+                <Pattern>${pattern}</Pattern>
+            </PatternLayout>
+        </Console>
+        <!-- 同一来源的Appender可以定义多个RollingFile，定义按天存储日志 -->
+        <RollingFile name="rolling_file"
+                     fileName="E://sync.log"
+                     filePattern="E://sync_%d{yyyy-MM-dd}.log">
+            <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout>
+                <Pattern>${pattern}</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+                <!--<SizeBasedTriggeringPolicy size="1 KB"/>-->
+            </Policies>
+        </RollingFile>
+    </Appenders>
+</configuration>
