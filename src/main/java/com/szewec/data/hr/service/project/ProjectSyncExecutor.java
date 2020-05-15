@@ -16,10 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static com.szewec.data.hr.util.SqlUtils.addSSValQuote2;
 
@@ -41,6 +38,8 @@ public class ProjectSyncExecutor {
      * 老系统 kfsr_bm 表 键是专业中心名称，值为专业中心负责人ID
      */
     public Map<String,String> kfsr_bm = new HashMap<>();
+
+    String[] productStr = new String[]{"工程监理","工地试验","工程代建"};
 
     @Autowired
     private SyncDataSource syncDataSource;
@@ -127,12 +126,23 @@ public class ProjectSyncExecutor {
         }
 
         if(StringUtils.isNotEmpty((String)row.get("产品类型"))){
+
+            String product = (String)row.get("产品类型");
             // 产品类型
-            sql.VALUES("fproduct_type",addSSValQuote2((String)row.get("产品类型")));
+            sql.VALUES("fproduct_type",addSSValQuote2(product));
             // 产品名称
-            sql.VALUES("fproduct_type_name",addSSValQuote2((String)row.get("产品类型")));
+            sql.VALUES("fproduct_type_name",addSSValQuote2(product));
             // 产品类型编码
-            sql.VALUES("fproduct_type_number",addSSValQuote2((String)productMap.get((String)row.get("产品类型"))));
+            sql.VALUES("fproduct_type_number",addSSValQuote2((String)productMap.get(product)));
+
+            boolean flag = Arrays.asList(productStr).contains(product);
+            if(flag){ // 实体项目
+                sql.VALUES("fproject_type_number",addSSValQuote2("10"));
+                sql.VALUES("fproject_type_name",addSSValQuote2("实体项目"));
+            }else {// 纸质项目
+                sql.VALUES("fproject_type_number",addSSValQuote2("20"));
+                sql.VALUES("fproject_type_name",addSSValQuote2("纸质项目"));
+            }
         }
 
         if(StringUtils.isNotEmpty((String)row.get("客户一"))){
@@ -385,6 +395,7 @@ public class ProjectSyncExecutor {
             sql.SET("fproduct_type_name =" + addSSValQuote2((String)row.get("产品类型")));
             // 产品类型编码
             sql.SET("fproduct_type_number =" + addSSValQuote2((String)productMap.get((String)row.get("产品类型"))));
+
         }
 
         if(StringUtils.isNotEmpty((String)row.get("客户一"))){
@@ -629,7 +640,7 @@ public class ProjectSyncExecutor {
             logger.info("foutter_manage_dept 不同："+ feePro.get("foutter_manage_dept") +"--" + row.get("一级外委管理部门"));
             return true;
         }
-       if(!checkObject(feePro.get("fproduct_type"),row.get("产品类型"))){
+        if(!checkObject(feePro.get("fproduct_type"),row.get("产品类型"))){
             logger.info("fproduct_type 不同："+ feePro.get("fproduct_type") +"--" + row.get("产品类型"));
 
             return true;
@@ -639,164 +650,164 @@ public class ProjectSyncExecutor {
 
             return true;
         }
-       if(!checkObject(feePro.get("fcontract_comp"),row.get("客户一"))){
+        if(!checkObject(feePro.get("fcontract_comp"),row.get("客户一"))){
             logger.info("fcontract_comp 不同："+ feePro.get("fcontract_comp") +"--" + row.get("客户一"));
 
             return true;
         }
-       if(!checkObject(feePro.get("fbuild_manage_comp"),row.get("客户二"))){
+        if(!checkObject(feePro.get("fbuild_manage_comp"),row.get("客户二"))){
             logger.info("fbuild_manage_comp 不同："+ feePro.get("fbuild_manage_comp") +"--" + row.get("客户二"));
             return true;
         }
-       if(!checkObject(feePro.get("fproject_manager_name"),row.get("项目经理"))){
-           logger.info((String) feePro.get("fnumber"));
+        if(!checkObject(feePro.get("fproject_manager_name"),row.get("项目经理"))){
+            logger.info((String) feePro.get("fnumber"));
             logger.info("fproject_manager_name 不同："+ feePro.get("fproject_manager_name") +"--" + row.get("项目经理"));
             return true;
         }
-       if(!checkObject(feePro.get("fbig_customer_leader_name"),row.get("BigClientLeaderName"))){
+        if(!checkObject(feePro.get("fbig_customer_leader_name"),row.get("BigClientLeaderName"))){
             logger.info("fbig_customer_leader_name 不同："+ feePro.get("fbig_customer_leader_name") +"--" + row.get("BigClientLeaderName"));
             return true;
         }
-       if(!checkObject(feePro.get("fproduct_type_leader_name"),row.get("ProductLeaderName"))){
+        if(!checkObject(feePro.get("fproduct_type_leader_name"),row.get("ProductLeaderName"))){
             logger.info("不同："+ 1);
             return true;
         }
 
 //         片区分管领导名称
-       if(!checkObject(feePro.get("fdistrict_leader_name"),row.get("DistrictLeaderName"))){
+        if(!checkObject(feePro.get("fdistrict_leader_name"),row.get("DistrictLeaderName"))){
             logger.info("不同："+ 1);
             return true;
         }
 
-            // 专业中心
-       if(!checkObject(feePro.get("fbusiness_center"),row.get("ProfessionalCenterName"))){
+        // 专业中心
+        if(!checkObject(feePro.get("fbusiness_center"),row.get("ProfessionalCenterName"))){
             logger.info("不同："+ 2);
             return true;
         }
 
-            // 生产决策分管领导
-       if(!checkObject(feePro.get("fproduction_making_leader"),row.get("ProdLeaderName"))){
+        // 生产决策分管领导
+        if(!checkObject(feePro.get("fproduction_making_leader"),row.get("ProdLeaderName"))){
             logger.info("不同："+ 3);
             return true;
         }
 
-            // 市场决策分管领导
-       if(!checkObject(feePro.get("fmarket_making_leader"),row.get("MarketLeaderName"))){
+        // 市场决策分管领导
+        if(!checkObject(feePro.get("fmarket_making_leader"),row.get("MarketLeaderName"))){
             logger.info("不同："+ 4);
             return true;
         }
 
-            // 开发主导部门
-       if(!checkObject(feePro.get("fdominated_dept"),row.get("DevelopMainDeptName"))){
+        // 开发主导部门
+        if(!checkObject(feePro.get("fdominated_dept"),row.get("DevelopMainDeptName"))){
             logger.info("不同："+ 5);
             return true;
         }
 
-            // 开发主导人
-       if(!checkObject(feePro.get("fdominated_person"),row.get("DevelopMainPersonName"))){
+        // 开发主导人
+        if(!checkObject(feePro.get("fdominated_person"),row.get("DevelopMainPersonName"))){
             logger.info("不同："+ 6);
             return true;
         }
 
-            // 所在区域
-       if(!checkObject(feePro.get("fregion"),row.get("所属分区"))){
+        // 所在区域
+        if(!checkObject(feePro.get("fregion"),row.get("所属分区"))){
             logger.info("不同："+ 7);
             return true;
         }
 
-            // 项目分级
-       if(!checkObject(feePro.get("fpro_classification"),row.get("项目分级"))){
+        // 项目分级
+        if(!checkObject(feePro.get("fpro_classification"),row.get("项目分级"))){
             logger.info("不同："+ 8);
             return true;
         }
 
 
-            // 内部结算手续
-       if(!checkObject(feePro.get("finside_balance"),row.get("内部结算手续"))){
+        // 内部结算手续
+        if(!checkObject(feePro.get("finside_balance"),row.get("内部结算手续"))){
             logger.info("不同："+ 9);
             return true;
         }
 
-            // 外部结算手续
-       if(!checkObject(feePro.get("fextemal_balance"),row.get("外部结算手续"))){
+        // 外部结算手续
+        if(!checkObject(feePro.get("fextemal_balance"),row.get("外部结算手续"))){
             logger.info("不同："+ 10);
             return true;
         }
 
-            // 合同形式
-       if(!checkObject(feePro.get("fcontract_shape"),row.get("合同形式"))){
+        // 合同形式
+        if(!checkObject(feePro.get("fcontract_shape"),row.get("合同形式"))){
             logger.info("不同："+ 11);
             return true;
         }
 
-            // 项目立项时间
+        // 项目立项时间
 //       if(!checkObject(feePro.get("fpro_approve_time"),row.get("项目立项时间"))){
 //            return true;
 //        }
 
-            // 所在省市
-       if(!checkObject(feePro.get("flocation_city"),row.get("所在省市"))){
+        // 所在省市
+        if(!checkObject(feePro.get("flocation_city"),row.get("所在省市"))){
             logger.info("不同："+ 12);
             return true;
         }
 
 
-            // 合同价格类型
-       if(!checkObject(feePro.get("fcontract_price_type"),row.get("合同价格类型"))){
+        // 合同价格类型
+        if(!checkObject(feePro.get("fcontract_price_type"),row.get("合同价格类型"))){
             logger.info("不同："+ 13);
             return true;
         }
 
-            // 旧项目编号
-       if(!checkObject(feePro.get("fold_pro_number"),row.get("Prj_BH_old"))){
+        // 旧项目编号
+        if(!checkObject(feePro.get("fold_pro_number"),row.get("Prj_BH_old"))){
             logger.info("不同："+ 14);
             return true;
         }
 
 
-            // 生产管理部门名称
-       if(!checkObject(feePro.get("fmanage_department_name"),row.get("生产管理部门"))){
+        // 生产管理部门名称
+        if(!checkObject(feePro.get("fmanage_department_name"),row.get("生产管理部门"))){
             logger.info("不同："+ 15);
             return true;
         }
 
-            // 生产管理部门负责人名称
-       if(!checkObject(feePro.get("fmanage_department_leader_name"),row.get("生产管理部门负责人"))){
+        // 生产管理部门负责人名称
+        if(!checkObject(feePro.get("fmanage_department_leader_name"),row.get("生产管理部门负责人"))){
             logger.info("不同："+ 16);
             return true;
         }
 
-            // 生产组织部门
-       if(!checkObject(feePro.get("fproduction_dept"),row.get("生产组织部门"))){
+        // 生产组织部门
+        if(!checkObject(feePro.get("fproduction_dept"),row.get("生产组织部门"))){
             logger.info("不同："+ 16);
             return true;
         }
 
-            // 合同签订时间
+        // 合同签订时间
 //       if(!checkObject(feePro.get("fcontract_sign_time"),row.get("HeTong_Time"))){
 //            return true;
 //        }
 
-            // 质量审核部门
-       if(!checkObject(feePro.get("fquality_manage_dept"),row.get("zlshbm"))){
+        // 质量审核部门
+        if(!checkObject(feePro.get("fquality_manage_dept"),row.get("zlshbm"))){
             logger.info("不同："+ 17);
             return true;
         }
 
-            // 开发性质备注
-       if(!checkObject(feePro.get("fdev_nature_remark"),row.get("kaifaxzbz"))){
+        // 开发性质备注
+        if(!checkObject(feePro.get("fdev_nature_remark"),row.get("kaifaxzbz"))){
             logger.info("不同："+ 18);
             return true;
         }
 
-            // 开发性质
-       if(!checkObject(feePro.get("fdev_nature"),row.get("kaifaxz"))){
+        // 开发性质
+        if(!checkObject(feePro.get("fdev_nature"),row.get("kaifaxz"))){
             logger.info("不同："+ 19);
             return true;
         }
 
-            // 所属市场线分公司
-       if(!checkObject(feePro.get("fmarket_manager_dept"),row.get("所属市场线分公司"))){
+        // 所属市场线分公司
+        if(!checkObject(feePro.get("fmarket_manager_dept"),row.get("所属市场线分公司"))){
             logger.info("不同："+ 20);
             return true;
         }
